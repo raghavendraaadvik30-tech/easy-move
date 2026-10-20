@@ -1,0 +1,217 @@
+/* ============================================================================
+   VidyaSetu — Motion & polish enhancement layer
+   Loaded AFTER styles.css. Only targets classes that exist in the app markup.
+   Adds tasteful entrance animations, staggering and micro-interactions.
+   Fully respects prefers-reduced-motion.
+   ============================================================================ */
+
+/* ---------- Keyframes ---------- */
+@keyframes vs-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes vs-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes vs-slide-right {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes vs-scale-in {
+  from { opacity: 0; transform: scale(.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes vs-pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+@keyframes vs-shimmer {
+  0%   { background-position: -160% 0; }
+  100% { background-position: 260% 0; }
+}
+@keyframes vs-float {
+  0%,100% { transform: translateY(0) rotate(7deg); }
+  50%     { transform: translateY(-10px) rotate(7deg); }
+}
+@keyframes vs-progress-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes vs-ring-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(90,95,224,.45); }
+  70%  { box-shadow: 0 0 0 7px rgba(90,95,224,0); }
+  100% { box-shadow: 0 0 0 0 rgba(90,95,224,0); }
+}
+
+/* ---------- Login page ---------- */
+.login-art { animation: vs-fade-in .5s ease both; }
+.login-brand { animation: vs-fade-up .5s ease .05s both; }
+.art-copy .eyebrow { animation: vs-fade-up .5s ease .12s both; }
+.art-copy h1 { animation: vs-fade-up .6s ease .2s both; }
+.art-copy > p { animation: vs-fade-up .6s ease .3s both; }
+.trust-list span { animation: vs-fade-up .5s ease both; }
+.trust-list span:nth-child(1) { animation-delay: .40s; }
+.trust-list span:nth-child(2) { animation-delay: .48s; }
+.trust-list span:nth-child(3) { animation-delay: .56s; }
+.login-art > small { animation: vs-fade-in .8s ease .7s both; }
+
+/* decorative floating orb in the art panel */
+.login-art::after { animation: vs-float 9s ease-in-out infinite; }
+
+.login-form { animation: vs-fade-up .55s ease .15s both; }
+.login-form h2 { animation: vs-fade-up .5s ease .22s both; }
+.login-form > p { animation: vs-fade-up .5s ease .3s both; }
+.login-form form { animation: vs-fade-up .55s ease .38s both; }
+.divider { animation: vs-fade-in .6s ease .5s both; }
+.demo-roles button { animation: vs-fade-up .5s ease both; }
+.demo-roles button:nth-child(1) { animation-delay: .54s; }
+.demo-roles button:nth-child(2) { animation-delay: .62s; }
+.demo-roles button:nth-child(3) { animation-delay: .70s; }
+.privacy-note { animation: vs-fade-in .7s ease .8s both; }
+
+.login-form input:focus { animation: vs-ring-pulse .5s ease; }
+
+/* demo role cards — richer hover */
+.demo-roles button {
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.demo-roles button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.demo-roles button:hover > strong { transform: translateX(3px); }
+.demo-roles button > strong { transition: transform .18s ease; }
+
+/* ---------- App shell entrance ---------- */
+.sidebar { animation: vs-slide-right .45s ease both; }
+.sidebar .nav-item { animation: vs-fade-up .4s ease both; }
+.sidebar .nav-item:nth-child(2) { animation-delay: .06s; }
+.sidebar .nav-item:nth-child(3) { animation-delay: .10s; }
+.sidebar .nav-item:nth-child(4) { animation-delay: .14s; }
+.sidebar .nav-item:nth-child(5) { animation-delay: .18s; }
+.sidebar .nav-item:nth-child(6) { animation-delay: .22s; }
+.sidebar .nav-item:nth-child(7) { animation-delay: .26s; }
+.sidebar .nav-item:nth-child(8) { animation-delay: .30s; }
+.topbar { animation: vs-fade-in .5s ease both; }
+.page-body { animation: vs-fade-up .45s ease .05s both; }
+
+/* nav item hover slides the icon slightly */
+.nav-item .nav-ico { transition: color .15s, transform .15s; }
+.nav-item:hover .nav-ico { transform: translateX(2px); }
+.nav-item.active { position: relative; }
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 60%; border-radius: 3px; background: var(--primary);
+  animation: vs-fade-in .3s ease both;
+}
+
+/* brand mark gentle interaction */
+.brand-mark { transition: transform .2s ease, box-shadow .2s ease; }
+.brand-button:hover .brand-mark { transform: rotate(-6deg) scale(1.05); }
+
+/* ---------- Hero / continue cards ---------- */
+.hero-card, .continue-card { animation: vs-scale-in .5s ease both; }
+.hero-illustration .book-shape { animation: vs-float 7s ease-in-out infinite; }
+
+/* animated sheen sweep across hero */
+.hero-card::after, .continue-card::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.14) 45%, transparent 60%);
+  background-size: 220% 100%;
+  animation: vs-shimmer 6s ease-in-out infinite;
+}
+
+/* progress bars grow in */
+.progress-line span, .home-progress span, .subject-progress span {
+  transform-origin: left center;
+  animation: vs-progress-grow .8s cubic-bezier(.4,0,.2,1) .25s both;
+}
+
+/* ---------- Grids with staggered entrance ---------- */
+.metric-grid .metric-card,
+.subject-grid .subject-card,
+.subject-rail .subject-mini,
+.resource-grid .resource-card,
+.chapter-list .chapter-row {
+  animation: vs-fade-up .45s ease both;
+}
+.metric-grid .metric-card:nth-child(1),
+.subject-grid .subject-card:nth-child(1),
+.subject-rail .subject-mini:nth-child(1),
+.resource-grid .resource-card:nth-child(1),
+.chapter-list .chapter-row:nth-child(1) { animation-delay: .04s; }
+.metric-grid .metric-card:nth-child(2),
+.subject-grid .subject-card:nth-child(2),
+.subject-rail .subject-mini:nth-child(2),
+.resource-grid .resource-card:nth-child(2),
+.chapter-list .chapter-row:nth-child(2) { animation-delay: .10s; }
+.metric-grid .metric-card:nth-child(3),
+.subject-grid .subject-card:nth-child(3),
+.subject-rail .subject-mini:nth-child(3),
+.resource-grid .resource-card:nth-child(3),
+.chapter-list .chapter-row:nth-child(3) { animation-delay: .16s; }
+.metric-grid .metric-card:nth-child(4),
+.subject-grid .subject-card:nth-child(4),
+.subject-rail .subject-mini:nth-child(4),
+.resource-grid .resource-card:nth-child(4),
+.chapter-list .chapter-row:nth-child(4) { animation-delay: .22s; }
+.subject-grid .subject-card:nth-child(5),
+.chapter-list .chapter-row:nth-child(5) { animation-delay: .28s; }
+.subject-grid .subject-card:nth-child(6),
+.chapter-list .chapter-row:nth-child(6) { animation-delay: .34s; }
+.chapter-list .chapter-row:nth-child(n+7) { animation-delay: .40s; }
+
+/* metric card hover lift */
+.metric-card { transition: border-color .15s, transform .18s ease, box-shadow .18s ease; }
+.metric-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+
+/* ---------- Practice question / options ---------- */
+.question-card { animation: vs-scale-in .4s ease both; }
+.options .option { animation: vs-fade-up .4s ease both; }
+.options .option:nth-child(1) { animation-delay: .05s; }
+.options .option:nth-child(2) { animation-delay: .12s; }
+.options .option:nth-child(3) { animation-delay: .19s; }
+.options .option:nth-child(4) { animation-delay: .26s; }
+.option:hover:not(:disabled) { transform: translateX(3px); }
+.option.correct span { animation: vs-pop .4s ease; }
+.option.incorrect span { animation: vs-pop .4s ease; }
+.answer-feedback { animation: vs-fade-up .35s ease both; }
+
+/* ---------- Buttons: subtle sheen on primary ---------- */
+.primary-button { position: relative; overflow: hidden; }
+.primary-button::after {
+  content: '';
+  position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.28), transparent);
+  transform: skewX(-20deg);
+  transition: left .5s ease;
+}
+.primary-button:hover:not(:disabled)::after { left: 130%; }
+
+/* ---------- Toast already slides in; add soft bounce ---------- */
+.toast { animation: vs-fade-up .3s cubic-bezier(.2,.8,.2,1.2) both; }
+
+/* ---------- Network status dot pulse ---------- */
+.network-status-indicator .status-dot { animation: vs-ring-pulse 2.4s ease-in-out infinite; }
+
+/* ---------- Respect reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  .login-art, .login-brand, .art-copy .eyebrow, .art-copy h1, .art-copy > p,
+  .trust-list span, .login-form, .login-form form, .demo-roles button,
+  .sidebar, .sidebar .nav-item, .topbar, .page-body, .hero-card, .continue-card,
+  .metric-card, .subject-card, .subject-mini, .resource-card, .chapter-row,
+  .question-card, .option, .answer-feedback, .toast {
+    animation: none !important;
+  }
+  .hero-card::after, .continue-card::after,
+  .login-art::after, .hero-illustration .book-shape,
+  .network-status-indicator .status-dot,
+  .progress-line span, .home-progress span, .subject-progress span {
+    animation: none !important;
+  }
+}
