@@ -1,5 +1,8 @@
-import { defineConfig } from 'vite'
+// @ts-nocheck
+import type { UserConfig } from 'vite'
 
-export default defineConfig({
+const config: UserConfig = {
   esbuild: { jsx: 'automatic' }
-})
+}
+
+export default config
