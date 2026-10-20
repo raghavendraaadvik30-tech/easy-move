@@ -39,6 +39,7 @@ VidyaSetu is a React + TypeScript foundation for a bilingual Karnataka State Boa
 ├── supabase/
 │   ├── migrations/20261020000000_initial_schema.sql
 │   ├── migrations/20261020010000_exam_security_hardening.sql
+│   ├── migrations/20261020020000_user_context_and_preferences.sql
 │   └── seed.sql
 ├── docs/CONTENT_SOURCES.md
 ├── docs/TEST_CASES.md
@@ -68,15 +69,16 @@ npm run build
 
 ## Supabase setup
 
-1. Create a Supabase project and keep the project URL and publishable `anon` key available. Do not put a service-role key in `.env.local` or frontend code.
+1. Use the configured project URL `https://kuyrvncypnfzerzpiqmq.supabase.co` and copy its browser-safe publishable/anon key from Supabase Dashboard → Project Settings → API. Do not put a service-role key in `.env.local` or frontend code.
 2. Install the Supabase CLI and link the project, or open the SQL editor.
-3. Apply both SQL migrations in filename order:
+3. Apply all SQL migrations in filename order:
    - `supabase/migrations/20261020000000_initial_schema.sql`
    - `supabase/migrations/20261020010000_exam_security_hardening.sql`
+   - `supabase/migrations/20261020020000_user_context_and_preferences.sql`
 4. Apply `supabase/seed.sql` for synthetic academic years, subjects, chapters, and clearly non-official starter records.
 5. Configure Supabase Auth email settings and the approved account recovery flow.
 6. Create synthetic users through Auth, then create corresponding `profiles` and `institution_memberships` rows using a secure admin workflow or migration—not from a browser-provided role.
-7. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env.local`, restart Vite, and test with at least two schools.
+7. Copy `.env.example` to `.env.local`, replace `your-publishable-anon-key`, restart Vite, and test with at least two schools. Configure the same two variables in the GitHub-connected deployment environment.
 
 The migrations enable RLS on all application tables, hide answer keys and unreleased marks, enforce one active attempt, use server deadlines, and release results only after the school enables release and the scheduled window closes. Use `docs/TEST_CASES.md` before any pilot. The current browser mock is deliberately labelled personal practice; scheduled school examinations still require client wiring to the supplied server RPCs.
 

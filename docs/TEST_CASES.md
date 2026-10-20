@@ -25,3 +25,15 @@ These cases are the minimum pilot checklist. Run them against a Supabase staging
 | UI-01 | Use a 360px viewport and keyboard-only navigation | No horizontal overflow; focus is visible; buttons and form controls have readable labels. |
 
 The `src/lib/access.test.ts` file covers the pure role-gating rules used by the foundation UI. Database/RLS cases require a real staging project because local demo mode is deliberately not a security boundary.
+
+## Supabase connection and account-context checks
+
+| ID | Scenario | Expected result |
+|---|---|---|
+| AUTH-03 | Auth user has a profile but no active institution membership | `get_current_user_context` denies access and the app signs out without entering a school workspace. |
+| AUTH-04 | Membership status is `invited` or `suspended` | Login context is denied; institution data remains inaccessible. |
+| AUTH-05 | User follows a valid password-recovery link and enters matching 8+ character passwords | Password updates through Supabase Auth, recovery tokens are removed from the URL, and the user returns to sign-in. |
+| AUTH-06 | Student attempts to update their `role`, `full_name`, or another profile column via PostgREST | SQL column privileges reject the request; only `preferred_medium` is self-editable. |
+| AUTH-07 | Two active memberships are inserted for one non-platform account | The `one_active_institution_per_user` unique index rejects the second active membership. |
+| PREF-01 | Student switches English/Kannada rapidly | Local preference updates immediately and queued server writes preserve the final selection order. |
+| CONFIG-01 | Project URL exists but the publishable key or migration is missing | UI says configuration is incomplete; it never claims that the database is online. |

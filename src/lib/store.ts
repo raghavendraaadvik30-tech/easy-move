@@ -21,3 +21,9 @@ export function recordAttempt(state:StoreState,attempt:AttemptRecord):StoreState
  const streakCount=state.streakLast===today?state.streakCount:state.streakLast===yesterday?state.streakCount+1:1
  return{...state,attempts:[attempt,...state.attempts].slice(0,50),revision:[...revision],streakCount,streakLast:today}
 }
+
+const mediumKey=(ownerId:string)=>`vidyasetu-medium:${ownerId.replace(/[^a-zA-Z0-9_-]/g,'_')}`
+export function loadMedium(ownerId:string,fallback:'english'|'kannada'):'english'|'kannada'{
+ try{const value=localStorage.getItem(mediumKey(ownerId));return value==='english'||value==='kannada'?value:fallback}catch{return fallback}
+}
+export function saveMedium(ownerId:string,medium:'english'|'kannada'){try{localStorage.setItem(mediumKey(ownerId),medium)}catch{/* storage unavailable */}}
