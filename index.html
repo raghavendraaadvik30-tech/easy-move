@@ -1,11 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f6f8fc" />
-    <meta name="description" content="Bilingual Karnataka SSLC learning and examination preparation." />
-    <title>VidyaSetu | Karnataka SSLC</title>
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#5a5fe0" />
+    <meta name="description" content="VidyaSetu — bilingual Karnataka SSLC (Class 10) learning, practice and mock examination preparation." />
+    <title>VidyaSetu · Karnataka SSLC</title>
+    <script>
+      // Apply the saved theme before first paint to avoid a flash of the wrong theme.
+      try {
+        var t = localStorage.getItem('vidyasetu-theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

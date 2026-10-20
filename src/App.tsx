@@ -4,16 +4,34 @@ import { chapters, chaptersFor, deepLessons, officialResources, questionBank, su
 import { demoProfiles } from './lib/demoData'
 import { examDraftKey, mockExamQuestions, remainingSeconds } from './lib/exam'
 import { getProfileForUser, isSupabaseConfigured, supabase } from './lib/supabase'
-import { emptyStore, loadStore, recordAttempt, saveStore } from './lib/store'
-import type { AttemptRecord, BankQuestion, Chapter, Medium, Profile, Role, StoreState } from './types'
+import { emptyStore, loadStore, loadTheme, recordAttempt, saveStore, saveTheme } from './lib/store'
+import type { AttemptRecord, BankQuestion, Chapter, Medium, Profile, Role, StoreState, Theme } from './types'
 
 type View = 'overview'|'learn'|'practice'|'papers'|'exams'|'performance'|'bookmarks'|'admin'|'settings'
 const nav: {id:View; label:string; icon:string; student?:boolean; staff?:boolean}[] = [
-  {id:'overview',label:'Overview',icon:'⌂'}, {id:'learn',label:'Learn by chapter',icon:'◈'},
-  {id:'practice',label:'MCQ practice',icon:'✓'}, {id:'papers',label:'Official resources',icon:'▤'},
-  {id:'exams',label:'Mock examination',icon:'▣'}, {id:'performance',label:'My performance',icon:'↗',student:true},
-  {id:'bookmarks',label:'Bookmarks & revision',icon:'☆',student:true}, {id:'admin',label:'School workspace',icon:'⚙',staff:true}
+  {id:'overview',label:'Overview',icon:'home'}, {id:'learn',label:'Learn by chapter',icon:'book'},
+  {id:'practice',label:'MCQ practice',icon:'check'}, {id:'papers',label:'Official resources',icon:'file'},
+  {id:'exams',label:'Mock examination',icon:'clipboard'}, {id:'performance',label:'My performance',icon:'chart',student:true},
+  {id:'bookmarks',label:'Bookmarks & revision',icon:'bookmark',student:true}, {id:'admin',label:'School workspace',icon:'shield',staff:true}
 ]
+
+const ICONS:Record<string,string>={
+ home:'<path d="M3 10.2 12 3l9 7.2V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+ book:'<path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 0-2 2z"/><path d="M5 20a2 2 0 0 1 2-2h11"/>',
+ check:'<circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+ file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>',
+ clipboard:'<rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/><path d="M9 13l2 2 4-4"/>',
+ chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+ bookmark:'<path d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v17l-6-4-6 4z"/>',
+ shield:'<path d="M12 3 5 6v5c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z"/><path d="m9 12 2 2 4-4"/>',
+ settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H1a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 2.6 7a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H7a1.6 1.6 0 0 0 1-1.5V1a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V7a1.6 1.6 0 0 0 1.5 1H23a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+ moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+ globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/>',
+ logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>'
+}
+function Icon({name,size=20}:{name:string;size?:number}){return <svg className="icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" dangerouslySetInnerHTML={{__html:ICONS[name]??''}}/>}
+function ThemeToggle({theme,setTheme}:{theme:Theme;setTheme:(t:Theme)=>void}){return <button className="icon-btn" aria-label={theme==='dark'?'Switch to light theme':'Switch to dark theme'} onClick={()=>setTheme(theme==='dark'?'light':'dark')}><Icon name={theme==='dark'?'sun':'moon'}/></button>}
 
 export default function App(){
   const [profile,setProfile]=useState<Profile|null>(null)
@@ -23,7 +41,11 @@ export default function App(){
   const [selectedSubject,setSelectedSubject]=useState('mat')
   const [selectedChapter,setSelectedChapter]=useState<string|undefined>(undefined)
   const [notice,setNotice]=useState('')
+  const [theme,setThemeState]=useState<Theme>(()=>loadTheme())
+  const setTheme=(t:Theme)=>{setThemeState(t);saveTheme(t)}
 
+  useEffect(()=>{ document.documentElement.dataset.theme=theme },[theme])
+  useEffect(()=>{ document.documentElement.lang=medium==='kannada'?'kn':'en' },[medium])
   useEffect(()=>{ if(profile)saveStore(profile.id,store) },[profile,store])
   useEffect(()=>{
     const client=supabase
@@ -43,18 +65,18 @@ export default function App(){
   const finishAttempt=(attempt:AttemptRecord)=>{setStore(s=>recordAttempt(s,attempt));setNotice(attempt.mode==='exam'?'Mock examination submitted and result saved.':'Practice result saved. Incorrect answers were added to revision.');setTimeout(()=>setNotice(''),4000)}
   const visibleNav=profile?.role==='student'?nav.filter(n=>!n.staff):nav.filter(n=>!n.student)
 
-  if(!profile)return <Login initialError={notice} onLogin={p=>{setProfile(p);setMedium(p.medium);setStore(loadStore(p.id))}}/>
+  if(!profile)return <Login initialError={notice} theme={theme} setTheme={setTheme} onLogin={p=>{setProfile(p);setMedium(p.medium);setStore(loadStore(p.id))}}/>
   return <div className="app-shell">
     <aside className="sidebar">
       <button className="brand brand-button" onClick={()=>setView('overview')}><span className="brand-mark">V</span><span><strong>VidyaSetu</strong><small>SSLC 2026–27</small></span></button>
       <div className="school-switcher"><span className="school-dot">{profile.institutionName[0]}</span><div><b>{profile.institutionName}</b><small>{profile.className?`Class ${profile.className}`:roleLabel[profile.role]}</small></div></div>
-      <nav aria-label="Primary navigation"><p className="nav-label">Learning workspace</p>{visibleNav.map(item=><button key={item.id} className={`nav-item ${view===item.id?'active':''}`} onClick={()=>setView(item.id)}><span>{item.icon}</span>{item.label}{item.id==='bookmarks'&&store.revision.length>0?<em>{store.revision.length}</em>:null}</button>)}</nav>
-      <div className="sidebar-bottom"><div className="source-badge"><span>✓</span><div><b>Source-aware content</b><small>Original notes + official links</small></div></div><button className={`nav-item ${view==='settings'?'active':''}`} onClick={()=>setView('settings')}><span>⚙</span>Settings</button></div>
+      <nav aria-label="Primary navigation"><p className="nav-label">Learning workspace</p>{visibleNav.map(item=><button key={item.id} className={`nav-item ${view===item.id?'active':''}`} onClick={()=>setView(item.id)}><span className="nav-ico"><Icon name={item.icon}/></span>{item.label}{item.id==='bookmarks'&&store.revision.length>0?<em>{store.revision.length}</em>:null}</button>)}</nav>
+      <div className="sidebar-bottom"><div className="source-badge"><span><Icon name="check" size={16}/></span><div><b>Source-aware content</b><small>Original notes + official links</small></div></div><button className={`nav-item ${view==='settings'?'active':''}`} onClick={()=>setView('settings')}><span className="nav-ico"><Icon name="settings"/></span>Settings</button></div>
     </aside>
     <main className="main-content">
-      <header className="topbar"><button className="mobile-brand" onClick={()=>setView('overview')}><span className="brand-mark">V</span><strong>VidyaSetu</strong></button><div className="breadcrumbs"><span>SSLC 2026–27</span><b>/</b><strong>{[...nav,{id:'settings' as View,label:'Settings',icon:''}].find(n=>n.id===view)?.label}</strong></div><div className="top-actions"><LanguageSwitch medium={medium} setMedium={setMedium}/><span className="avatar">{initials(profile.fullName)}</span><div className="user-label"><b>{profile.fullName}</b><small>{roleLabel[profile.role]}</small></div><button className="link-button" onClick={async()=>{try{await supabase?.auth.signOut()}finally{setProfile(null);setStore(emptyStore())}}}>Log out</button></div></header>
-      {notice&&<div className="toast" role="status">✓ {notice}</div>}
-      <div className="mobile-nav" aria-label="Mobile navigation">{visibleNav.slice(0,6).map(item=><button key={item.id} className={view===item.id?'active':''} onClick={()=>setView(item.id)}><span>{item.icon}</span><small>{item.label.split(' ')[0]}</small></button>)}</div>
+      <header className="topbar"><button className="mobile-brand" onClick={()=>setView('overview')}><span className="brand-mark">V</span><strong>VidyaSetu</strong></button><div className="breadcrumbs"><span>SSLC 2026–27</span><b>/</b><strong>{[...nav,{id:'settings' as View,label:'Settings',icon:''}].find(n=>n.id===view)?.label}</strong></div><div className="top-actions"><LanguageSwitch medium={medium} setMedium={setMedium}/><ThemeToggle theme={theme} setTheme={setTheme}/><span className="avatar">{initials(profile.fullName)}</span><div className="user-label"><b>{profile.fullName}</b><small>{roleLabel[profile.role]}</small></div><button className="icon-btn" aria-label="Log out" onClick={async()=>{try{await supabase?.auth.signOut()}finally{setProfile(null);setStore(emptyStore())}}}><Icon name="logout"/></button></div></header>
+      {notice&&<div className="toast" role="status">{notice}</div>}
+      <div className="mobile-nav" aria-label="Mobile navigation">{visibleNav.slice(0,6).map(item=><button key={item.id} className={view===item.id?'active':''} onClick={()=>setView(item.id)}><Icon name={item.icon} size={20}/><small>{item.label.split(' ')[0]}</small></button>)}</div>
       <div className="page-body">
         {view==='overview'&&<Overview profile={profile} medium={medium} store={store} openLearn={()=>setView('learn')} openPractice={()=>setView('practice')} openPapers={()=>setView('papers')} openChapter={openChapter}/>}
         {view==='learn'&&<Learning medium={medium} store={store} setStore={setStore} subjectId={selectedSubject} setSubjectId={id=>{setSelectedSubject(id);setSelectedChapter(undefined)}} selectedChapter={selectedChapter} setChapter={setSelectedChapter}/>}
@@ -64,17 +86,17 @@ export default function App(){
         {view==='performance'&&<Performance store={store} openRevision={()=>setView('bookmarks')}/>}
         {view==='bookmarks'&&<SavedItems medium={medium} store={store} setStore={setStore} openChapter={openChapter}/>}
         {view==='admin'&&<Admin profile={profile}/>}
-        {view==='settings'&&<Settings medium={medium} setMedium={setMedium} store={store} setStore={setStore}/>}
+        {view==='settings'&&<Settings medium={medium} setMedium={setMedium} theme={theme} setTheme={setTheme} store={store} setStore={setStore}/>}
       </div>
     </main>
   </div>
 }
 
-function Login({onLogin,initialError}:{onLogin:(p:Profile)=>void;initialError:string}){
+function Login({onLogin,initialError,theme,setTheme}:{onLogin:(p:Profile)=>void;initialError:string;theme:Theme;setTheme:(t:Theme)=>void}){
  const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[error,setError]=useState(initialError)
  useEffect(()=>{if(initialError)setError(initialError)},[initialError])
  const submit=async(e:FormEvent)=>{e.preventDefault();setError('');if(!supabase){setError('Connect Supabase for real accounts, or use the local student preview below.');return}const{data,error:authError}=await supabase.auth.signInWithPassword({email,password});if(authError||!data.user){setError(authError?.message??'Sign-in failed.');return}try{const p=await getProfileForUser(data.user.id);if(p)onLogin(p);else{setError('This account needs an approved school membership.');await supabase.auth.signOut()}}catch(error){setError(error instanceof Error?error.message:'Could not load your school profile.');await supabase.auth.signOut()}}
- return <div className="login-page"><section className="login-art"><div className="login-brand"><span className="brand-mark">V</span><strong>VidyaSetu</strong></div><div className="art-copy"><p className="eyebrow">KARNATAKA SSLC · 2026–27</p><h1>Understand every concept.<br/><span>Practise with purpose.</span></h1><p>Bilingual notes, original syllabus-aligned practice and direct access to official Karnataka resources.</p><div className="trust-list"><span>✓ English + ಕನ್ನಡ learning</span><span>✓ No question predictions or mark guarantees</span><span>✓ Student progress stays private</span></div></div><small>Developed and maintained by CodeOrigin.AI</small></section><section className="login-panel"><div className="login-form"><div className="mobile-login-brand"><span className="brand-mark">V</span><strong>VidyaSetu</strong></div><h2>Welcome back</h2><p>Sign in with your school-approved account.</p><form onSubmit={submit}><label>Email address<input type="email" required value={email} onChange={(e:ChangeEvent<HTMLInputElement>)=>setEmail(e.target.value)} placeholder="student@school.example"/></label><label>Password<input type="password" required value={password} onChange={(e:ChangeEvent<HTMLInputElement>)=>setPassword(e.target.value)} placeholder="Enter your password"/></label>{error&&<div className="form-error">{error}</div>}<button className="primary-button full">Sign in securely →</button></form>{!isSupabaseConfigured&&<><div className="divider"><span>LOCAL FUNCTIONAL PREVIEW</span></div><div className="demo-roles">{(['student','teacher','school_admin'] as Role[]).map(role=><button key={role} onClick={()=>onLogin(demoProfiles[role])}><span className="role-dot">{role==='student'?'S':role==='teacher'?'T':'A'}</span><span><b>Continue as {roleLabel[role]}</b><small>Uses synthetic identity; progress saves on this device</small></span><strong>→</strong></button>)}</div></>}<small className="privacy-note">Never enter Aadhaar, precise location or unrelated personal information.</small></div></section></div>
+ return <div className="login-page"><div className="login-theme-toggle"><ThemeToggle theme={theme} setTheme={setTheme}/></div><section className="login-art"><div className="login-brand"><span className="brand-mark">V</span><strong>VidyaSetu</strong></div><div className="art-copy"><p className="eyebrow">KARNATAKA SSLC · 2026–27</p><h1>Understand every concept.<br/><span>Practise with purpose.</span></h1><p>Bilingual notes, original syllabus-aligned practice and direct access to official Karnataka resources.</p><div className="trust-list"><span>✓ English + ಕನ್ನಡ learning</span><span>✓ No question predictions or mark guarantees</span><span>✓ Student progress stays private</span></div></div><small>Developed and maintained by CodeOrigin.AI</small></section><section className="login-panel"><div className="login-form"><div className="mobile-login-brand"><span className="brand-mark">V</span><strong>VidyaSetu</strong></div><h2>Welcome back</h2><p>Sign in with your school-approved account.</p><form onSubmit={submit}><label>Email address<input type="email" required value={email} onChange={(e:ChangeEvent<HTMLInputElement>)=>setEmail(e.target.value)} placeholder="student@school.example"/></label><label>Password<input type="password" required value={password} onChange={(e:ChangeEvent<HTMLInputElement>)=>setPassword(e.target.value)} placeholder="Enter your password"/></label>{error&&<div className="form-error">{error}</div>}<button className="primary-button full">Sign in securely →</button></form>{!isSupabaseConfigured&&<><div className="divider"><span>LOCAL FUNCTIONAL PREVIEW</span></div><div className="demo-roles">{(['student','teacher','school_admin'] as Role[]).map(role=><button key={role} onClick={()=>onLogin(demoProfiles[role])}><span className="role-dot">{role==='student'?'S':role==='teacher'?'T':'A'}</span><span><b>Continue as {roleLabel[role]}</b><small>Uses synthetic identity; progress saves on this device</small></span><strong>→</strong></button>)}</div></>}<small className="privacy-note">Never enter Aadhaar, precise location or unrelated personal information.</small></div></section></div>
 }
 
 function LanguageSwitch({medium,setMedium}:{medium:Medium;setMedium:(m:Medium)=>void}){return <div className="language-switch"><button className={medium==='english'?'selected':''} onClick={()=>setMedium('english')}>English</button><button className={medium==='kannada'?'selected':''} onClick={()=>setMedium('kannada')}>ಕನ್ನಡ</button></div>}
@@ -129,7 +151,15 @@ function SavedItems({medium,store,setStore,openChapter}:{medium:Medium;store:Sto
 
 function Admin({profile}:{profile:Profile}){if(!canManageLearningContent(profile))return <Empty text="This workspace is available only to authorised teachers and administrators."/>;return <div className="content-view"><div className="view-header"><div><p className="eyebrow">AUTHORIZED SCHOOL WORKSPACE</p><h1>Content and operations</h1><p className="muted">UI controls remain limited until connected to an approved Supabase account and institution membership.</p></div></div><div className="admin-grid"><AdminCard title="Review curriculum" value={`${chapters.length} chapters`} text="Verify each title, translation and note against the official current documents."/><AdminCard title="Question bank" value={`${questionBank.length} original MCQs`} text="Every published question needs a reviewer and content version."/><AdminCard title="Create school test" value="Supabase required" text="Scheduled tests must use server start/end time and server scoring."/><AdminCard title="Manage accounts" value={canManageInstitution(profile)?'School scope only':'Not permitted'} text="School administrators cannot grant platform-admin privileges."/></div><div className="important-banner"><b>No destructive or privileged action is simulated</b><p>Account provisioning, publishing and report export must be connected to audited backend operations. Fake frontend-only admin buttons would provide false security, so they are intentionally not shown.</p></div></div>}
 
-function Settings({medium,setMedium,store,setStore}:{medium:Medium;setMedium:(m:Medium)=>void;store:StoreState;setStore:Dispatch<SetStateAction<StoreState>>}){return <div className="content-view"><div className="view-header"><div><p className="eyebrow">PROFILE & PREFERENCES</p><h1>Settings</h1><p className="muted">Changes apply to this device in local preview mode.</p></div></div><div className="settings-card"><div className="settings-section"><div><h2>Learning language</h2><p>Switch explanations between English and Kannada.</p></div><LanguageSwitch medium={medium} setMedium={setMedium}/></div><div className="settings-section"><div><h2>Personal accuracy target</h2><p>A study goal only—not a guaranteed examination score.</p></div><div className="target-input"><input type="number" min="35" max="100" value={store.target} onChange={(e:ChangeEvent<HTMLInputElement>)=>setStore(s=>({...s,target:Math.max(35,Math.min(100,Number(e.target.value)))}))}/><span>%</span></div></div><div className="settings-section"><div><h2>Reset local learning data</h2><p>Removes attempts, progress, bookmarks and revision items from this browser.</p></div><button className="secondary-button danger-border" onClick={()=>{if(confirm('Delete local learning progress from this device?'))setStore({done:{},bookmarks:[],revision:[],attempts:[],target:80,custom:[],streakCount:0,streakLast:''})}}>Reset data</button></div></div></div>}
+function Settings({medium,setMedium,theme,setTheme,store,setStore}:{medium:Medium;setMedium:(m:Medium)=>void;theme:Theme;setTheme:(t:Theme)=>void;store:StoreState;setStore:Dispatch<SetStateAction<StoreState>>}){
+ return <div className="content-view"><div className="view-header"><div><p className="eyebrow">PROFILE &amp; PREFERENCES</p><h1>Settings</h1><p className="muted">Appearance and language preferences are saved on this device.</p></div></div>
+ <div className="settings-card">
+  <div className="settings-section"><div><h2>Appearance</h2><p>Choose a light or dark theme for the whole application.</p></div><div className="theme-options">{(['light','dark'] as Theme[]).map(t=><button key={t} className={`theme-option ${theme===t?'active':''}`} onClick={()=>setTheme(t)} aria-pressed={theme===t}><span className={`theme-preview ${t}`}><span className="tp-side"/><span className="tp-main"><span className="tp-bar accent"/><span className="tp-bar"/><span className="tp-bar" style={{width:'70%'}}/></span></span><b><Icon name={t==='light'?'sun':'moon'} size={15}/>{t==='light'?'Light':'Dark'}{theme===t?' ✓':''}</b></button>)}</div></div>
+  <div className="settings-section"><div><h2>Learning language</h2><p>Switch lesson explanations and question options between English and Kannada.</p></div><LanguageSwitch medium={medium} setMedium={setMedium}/></div>
+  <div className="settings-section"><div><h2>Personal accuracy target</h2><p>A study goal only — not a guaranteed examination score.</p></div><div className="target-input"><input type="number" min="35" max="100" value={store.target} onChange={(e:ChangeEvent<HTMLInputElement>)=>setStore(s=>({...s,target:Math.max(35,Math.min(100,Number(e.target.value)))}))}/><span>%</span></div></div>
+  <div className="settings-section"><div><h2>Reset local learning data</h2><p>Removes attempts, progress, bookmarks and revision items from this browser.</p></div><button className="secondary-button danger-border" onClick={()=>{if(confirm('Delete local learning progress from this device?'))setStore({done:{},bookmarks:[],revision:[],attempts:[],target:80,custom:[],streakCount:0,streakLast:''})}}>Reset data</button></div>
+ </div></div>
+}
 
 function Metric({label,value,note,alert}:{label:string;value:string;note:string;alert?:boolean}){return <div className="metric-card"><small>{label}</small><strong>{value}</strong><em className={alert?'attention':''}>{note}</em></div>}
 function AdminCard({title,value,text}:{title:string;value:string;text:string}){return <article className="admin-card"><span>✓</span><h2>{title}</h2><b>{value}</b><p>{text}</p></article>}

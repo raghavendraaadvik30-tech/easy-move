@@ -1,5 +1,6 @@
 export type Role = 'student' | 'teacher' | 'school_admin' | 'platform_admin'
 export type Medium = 'kannada' | 'english'
+export type Theme = 'light' | 'dark'
 
 export interface Profile {
   id: string
