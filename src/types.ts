@@ -8,35 +8,98 @@ export interface Profile {
   institutionName: string
   className?: string
   medium: Medium
+  thirdLanguage?: string
 }
 
-export interface Subject {
+export interface SubjectDef {
   id: string
+  code: string
   name: string
-  kannadaName: string
+  nameKn: string
   color: string
   icon: string
-  progress: number
-  nextChapter: string
+  isLanguage: boolean
 }
 
-export interface Activity {
-  id: string
-  type: 'mcq' | 'lesson' | 'exam'
-  title: string
-  subtitle: string
-  score?: string
-  date: string
+export interface KeyPoints {
+  en: string[]
+  kn: string[]
 }
 
-export interface PracticeQuestion {
+export interface Chapter {
   id: string
-  subject: string
-  chapter: string
+  subjectId: string
+  num: number
+  section?: string
+  sectionKn?: string
+  titleEn: string
+  titleKn: string
+  kp: KeyPoints
+}
+
+export interface LessonSection {
+  hEn: string
+  hKn: string
+  bodyEn: string
+  bodyKn: string
+}
+
+export interface DeepLesson {
+  chapterId: string
+  introEn: string
+  introKn: string
+  sections: LessonSection[]
+  formulas?: { label: string; formula: string }[]
+  examTipEn?: string
+  examTipKn?: string
+}
+
+export type Difficulty = 'easy' | 'medium' | 'hard'
+
+export interface BankQuestion {
+  id: string
+  subjectId: string
+  chapterId: string
   prompt: string
   promptKn: string
   options: string[]
+  optionsKn: string[]
   answer: number
   explanation: string
   explanationKn: string
+  difficulty: Difficulty
+  marks: number
+  source: 'original_practice'
+}
+
+export interface OfficialResource {
+  id: string
+  title: string
+  titleKn: string
+  description: string
+  url: string
+  kind: 'model_papers' | 'previous_papers' | 'textbooks' | 'syllabus' | 'results'
+}
+
+export interface AttemptRecord {
+  id: string
+  at: string
+  mode: 'practice' | 'exam'
+  title: string
+  total: number
+  correct: number
+  durationSec: number
+  results: { qid: string; subjectId: string; chapterId: string; correct: boolean }[]
+}
+
+export interface StoreState {
+  done: Record<string, number>
+  lastChapter?: string
+  bookmarks: string[]
+  revision: string[]
+  attempts: AttemptRecord[]
+  target: number
+  custom: BankQuestion[]
+  streakCount: number
+  streakLast: string
 }
